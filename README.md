@@ -17,6 +17,8 @@ make
  4. 測試一下
 src/redis-server --version
 
+pip install celery
+
  1. 下載並安裝 nvm
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
