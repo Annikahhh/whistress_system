@@ -38,15 +38,19 @@ cd ~/myredis/redis-stable
 
 src/redis-server
 
+//lsof -i :6379 
+//kill <PID>
+
 (new ternimal)
 cd whistress_system/backend
 
-celery -A tasks worker --loglevel=info -P solo
+celery -A tasks worker --loglevel=info -P threads //-P solo
 
 ============================================
 
 (new terminal)
-uvicorn main:app --reload
+//uvicorn main:app --reload
+uvicorn main:app --host 0.0.0.0 --port 8000
 
 npm start
 
