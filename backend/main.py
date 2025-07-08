@@ -35,8 +35,8 @@ async def analyze_stress_async(audio_file: UploadFile = File(...), prompt_text: 
 
     try:
         audio_bytes = await audio_file.read()
-        with open("debug_uploaded_audio.wav", "wb") as f:
-            f.write(audio_bytes)
+        #with open("debug_uploaded_audio.wav", "wb") as f:
+        #    f.write(audio_bytes)
 
         # 將任務發送到 Celery 佇列
         # audio_bytes 直接作為參數傳遞

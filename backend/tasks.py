@@ -112,12 +112,12 @@ def analyze_stress_task(self, audio_bytes: bytes, prompt_text: str = None):
             "sampling_rate": sampling_rate
         }
 
-        pred_transcription, pred_stresses = client.predict(
+        pred_transcription, pred_stresses_indices = client.predict(
             audio=test_audio,
             transcription=prompt_text,
             return_pairs=False
         )
-
+        pred_stresses = [i for i, x in enumerate(pred_stresses_indices) if x == 1]
         result = {
             "predicted_transcription": pred_transcription,
             "predicted_stresses": pred_stresses
