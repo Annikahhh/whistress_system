@@ -35,7 +35,7 @@ function App() {
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
 
-  // 當全部題目答完時顯示結束畫面
+  // 當全部題目答完時顯示結束畫面000
   if (finished) {
     return (
       <div
