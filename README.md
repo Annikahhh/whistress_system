@@ -38,8 +38,11 @@ src/redis-server
 (new ternimal)
 cd whistress_system
 celery -A tasks worker --loglevel=info -P solo
-
+============================================
 (new terminal)
 uvicorn main:app --reload
 
 npm start
+
+============================================
+uvicorn main:app --host 0.0.0.0 --port 8000
