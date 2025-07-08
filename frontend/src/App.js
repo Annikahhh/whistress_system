@@ -119,6 +119,7 @@ function App() {
 
     try {
       const response = await fetch("http://localhost:8000/analyze_stress_async", {
+        //http://140.122.184.162:8000/analyze_stress_async
         method: "POST",
         body: formData,
       });
@@ -140,6 +141,7 @@ function App() {
   const pollTaskResult = async (taskId) => {
     const interval = setInterval(async () => {
       const res = await fetch(`http://localhost:8000/tasks/${taskId}`);
+      //http://140.122.184.162:8000/tasks/${taskId}
       const data = await res.json();
 
       if (data.status === "COMPLETED") {
