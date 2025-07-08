@@ -39,7 +39,7 @@ cd ~/myredis/redis-stable
 src/redis-server
 
 (new ternimal)
-cd whistress_system
+cd whistress_system/backend
 
 celery -A tasks worker --loglevel=info -P solo
 
