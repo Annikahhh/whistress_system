@@ -33,11 +33,14 @@ nvm use --lts
 npm install
 
 cd ~/myredis/redis-stable
+
 src/redis-server
 
 (new ternimal)
 cd whistress_system
+
 celery -A tasks worker --loglevel=info -P solo
+
 ============================================
 (new terminal)
 uvicorn main:app --reload
