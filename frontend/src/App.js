@@ -63,11 +63,54 @@ function App() {
     mediaRecorderRef.current.stop();
   };
 
-  const sendAudio = () => {
+  /*const sendAudio = () => {
     // 模擬分析：用mockUserStress 隨機生成一個使用者重音結果
     const userStress = mockUserStress(currentSentence.stresses, words.length);
     setUserStressIndices(userStress);
     setShowResult(true);
+  };*/
+  const sendAudio = async () => {
+    if (!audioURL) return;
+
+    // 1. 取得 Blob
+    const response = await fetch(audioURL);
+    const blob = await response.blob();
+
+    // 2. 建立 FormData，加入 audio 和 prompt_text
+    const formData = new FormData();
+    formData.append("audio_file", blob, "recording.wav");
+    formData.append("prompt_text", currentSentence.text);
+
+    // 3. 發送到後端
+    const res = await fetch("http://localhost:8000/analyze_stress_async", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (data.success && data.task_id) {
+      pollResult(data.task_id);
+    } else {
+      alert("送出失敗");
+    }
+  };
+
+  const pollResult = async (taskId) => {
+    const interval = setInterval(async () => {
+      const res = await fetch(`http://localhost:8000/tasks/${taskId}`);
+      const data = await res.json();
+
+      if (data.status === "COMPLETED") {
+        clearInterval(interval);
+        const stressIndices = data.result.stressed_indices || [];
+        setUserStressIndices(stressIndices);
+        setShowResult(true);
+      } else if (data.status === "FAILED") {
+        clearInterval(interval);
+        alert("重音分析失敗：" + data.error);
+      }
+      // 否則繼續等待
+    }, 1000);
   };
 
   const nextQuestion = () => {
