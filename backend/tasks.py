@@ -6,6 +6,11 @@ from whistress import WhiStressInferenceClient
 import os
 import json # 用於儲存複雜的結果到 Redis
 import traceback
+from io import BytesIO
+import soundfile as sf
+import logging
+from pydub import AudioSegment
+import tempfile
 #import multiprocessing
 
 #multiprocessing.set_start_method('spawn', force=True)
@@ -36,9 +41,20 @@ def get_whistress_client():
 # --- 定義 Celery 任務 ---
 @celery_app.task(bind=True)
 def analyze_stress_task(self, audio_bytes: bytes, prompt_text: str = None):
+    #with open("debug_upload.webm", "wb") as f:
+    #    f.write(audio_bytes)
     """
     Celery 任務：接收音頻二進制數據和引導文本，進行重音模式分析。
     """
+    """try:
+        # 測試能不能被 soundfile 正確打開
+        audio_io = BytesIO(audio_bytes)
+        info = sf.info(audio_io)  # ← 如果這裡報錯，代表格式錯誤
+        print("Audio info:", info)
+    except Exception as e:
+        print("Error when reading audio:", e)
+        raise e  # 讓 Celery 正常拋錯
+
     try:
         client = get_whistress_client() # 獲取模型實例
 
@@ -70,3 +86,45 @@ def analyze_stress_task(self, audio_bytes: bytes, prompt_text: str = None):
         self.update_state(state='FAILURE', meta={'exc': repr(e), 'traceback': traceback.format_exc()})
         #print(f"Task error: {e}")
         raise # 重新拋出異常讓 Celery 標記任務失敗
+    """
+    try:
+        # 儲存為 temp .webm 檔
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_in:
+            temp_in.write(audio_bytes)
+            temp_in.flush()
+
+            # 轉為 wav
+            audio = AudioSegment.from_file(temp_in.name, format="webm")
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_out:
+                audio.export(temp_out.name, format="wav")
+
+                # 用 librosa 讀取
+                audio_array, sampling_rate = librosa.load(temp_out.name, sr=None)
+
+    except Exception as e:
+        print("Error converting/reading audio:", e)
+        raise e
+
+    try:
+        client = get_whistress_client()
+        test_audio = {
+            "array": audio_array,
+            "sampling_rate": sampling_rate
+        }
+
+        pred_transcription, pred_stresses = client.predict(
+            audio=test_audio,
+            transcription=prompt_text,
+            return_pairs=False
+        )
+
+        result = {
+            "predicted_transcription": pred_transcription,
+            "predicted_stresses": pred_stresses
+        }
+
+        return json.dumps(result)
+    except Exception as e:
+        print("Error during prediction:", e)
+        raise e
+    

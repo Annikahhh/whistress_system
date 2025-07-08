@@ -69,7 +69,7 @@ function App() {
     setUserStressIndices(userStress);
     setShowResult(true);
   };*/
-  const sendAudio = async () => {
+  /*const sendAudio = async () => {
     if (!audioURL) return;
 
     // 1. 取得 Blob
@@ -111,7 +111,53 @@ function App() {
       }
       // 否則繼續等待
     }, 1000);
+  };*/
+  const sendAudio = async () => {
+    if (!chunksRef.current.length) return;
+
+    const blob = new Blob(chunksRef.current, { type: "audio/wav" });
+    const formData = new FormData();
+    formData.append("audio_file", blob, "recording.wav");
+    formData.append("prompt_text", currentSentence.text);
+
+    try {
+      const response = await fetch("http://localhost:8000/analyze_stress_async", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const taskId = data.task_id;
+        pollTaskResult(taskId); // 啟動輪詢等待結果
+      } else {
+        alert("分析任務提交失敗");
+      }
+    } catch (err) {
+      console.error("Error uploading audio:", err);
+      alert("上傳錯誤");
+    }
   };
+  const pollTaskResult = async (taskId) => {
+    const interval = setInterval(async () => {
+      const res = await fetch(`http://localhost:8000/tasks/${taskId}`);
+      const data = await res.json();
+
+      if (data.status === "COMPLETED") {
+        clearInterval(interval);
+        const { predicted_stresses } = data.result;
+        setUserStressIndices(predicted_stresses);
+        setShowResult(true);
+      } else if (data.status === "FAILED") {
+        clearInterval(interval);
+        alert("任務執行失敗：" + data.error);
+      }
+      // 否則繼續等待
+    }, 1000);
+  };
+
+
 
   const nextQuestion = () => {
     setCurrentIndex((idx) => (idx + 1) % sentences.length);

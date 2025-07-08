@@ -21,6 +21,10 @@ class WhiStressInferenceClient:
         if return_pairs:
             return word_emphasis_pairs
         # returs transcription str and list of emphasized words
-        return " ".join([x[0] for x in word_emphasis_pairs]), [
+        '''return " ".join([x[0] for x in word_emphasis_pairs]), [
             x[0] for x in word_emphasis_pairs if x[1] == 1
+        ]'''
+        return " ".join([x[0] for x in word_emphasis_pairs]), [
+            i for i, x in enumerate(word_emphasis_pairs) if x[1] == 1
+            #1 if x[1] == 1 else 0 for x in word_emphasis_pairs 
         ]
