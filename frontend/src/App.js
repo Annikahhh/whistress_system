@@ -15,7 +15,6 @@ const sentences = [
 
 // 模擬使用者重音結果 (隨機產生正確或錯誤)
 function mockUserStress(correctStresses, wordCount) {
-  // 80%機率對，20%機率錯
   return Array.from({ length: wordCount }, (_, i) => {
     if (correctStresses.includes(i)) {
       return Math.random() < 0.8 ? i : -1;
@@ -31,9 +30,50 @@ function App() {
   const [audioURL, setAudioURL] = useState(null);
   const [userStressIndices, setUserStressIndices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finished, setFinished] = useState(false); // 新增：是否結束全部題目
 
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
+
+  // 當全部題目答完時顯示結束畫面
+  if (finished) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          backgroundColor: "#e3f2fd",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+          padding: 20,
+        }}
+      >
+        <h1 style={{ color: "#1565c0", marginBottom: 20 }}>🎉 恭喜完成所有題目！</h1>
+        <button
+          onClick={() => {
+            setCurrentIndex(0);
+            setUserStressIndices([]);
+            setAudioURL(null);
+            setShowResult(false);
+            setFinished(false);
+          }}
+          style={{
+            padding: "12px 30px",
+            fontSize: 18,
+            borderRadius: 10,
+            border: "none",
+            backgroundColor: "#1976d2",
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
+          再玩一次
+        </button>
+      </div>
+    );
+  }
 
   const currentSentence = sentences[currentIndex];
   const words = currentSentence.text.split(" ");
@@ -63,107 +103,22 @@ function App() {
     mediaRecorderRef.current.stop();
   };
 
-  /*const sendAudio = () => {
-    // 模擬分析：用mockUserStress 隨機生成一個使用者重音結果
+  const sendAudio = () => {
+    // 模擬分析
     const userStress = mockUserStress(currentSentence.stresses, words.length);
     setUserStressIndices(userStress);
     setShowResult(true);
-  };*/
-  /*const sendAudio = async () => {
-    if (!audioURL) return;
-
-    // 1. 取得 Blob
-    const response = await fetch(audioURL);
-    const blob = await response.blob();
-
-    // 2. 建立 FormData，加入 audio 和 prompt_text
-    const formData = new FormData();
-    formData.append("audio_file", blob, "recording.wav");
-    formData.append("prompt_text", currentSentence.text);
-
-    // 3. 發送到後端
-    const res = await fetch("http://localhost:8000/analyze_stress_async", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-
-    if (data.success && data.task_id) {
-      pollResult(data.task_id);
-    } else {
-      alert("送出失敗");
-    }
   };
-
-  const pollResult = async (taskId) => {
-    const interval = setInterval(async () => {
-      const res = await fetch(`http://localhost:8000/tasks/${taskId}`);
-      const data = await res.json();
-
-      if (data.status === "COMPLETED") {
-        clearInterval(interval);
-        const stressIndices = data.result.stressed_indices || [];
-        setUserStressIndices(stressIndices);
-        setShowResult(true);
-      } else if (data.status === "FAILED") {
-        clearInterval(interval);
-        alert("重音分析失敗：" + data.error);
-      }
-      // 否則繼續等待
-    }, 1000);
-  };*/
-  const sendAudio = async () => {
-    if (!chunksRef.current.length) return;
-
-    const blob = new Blob(chunksRef.current, { type: "audio/wav" });
-    const formData = new FormData();
-    formData.append("audio_file", blob, "recording.wav");
-    formData.append("prompt_text", currentSentence.text);
-
-    try {
-      const response = await fetch("http://localhost:8000/analyze_stress_async", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        const taskId = data.task_id;
-        pollTaskResult(taskId); // 啟動輪詢等待結果
-      } else {
-        alert("分析任務提交失敗");
-      }
-    } catch (err) {
-      console.error("Error uploading audio:", err);
-      alert("上傳錯誤");
-    }
-  };
-  const pollTaskResult = async (taskId) => {
-    const interval = setInterval(async () => {
-      const res = await fetch(`http://localhost:8000/tasks/${taskId}`);
-      const data = await res.json();
-
-      if (data.status === "COMPLETED") {
-        clearInterval(interval);
-        const { predicted_stresses } = data.result;
-        setUserStressIndices(predicted_stresses);
-        setShowResult(true);
-      } else if (data.status === "FAILED") {
-        clearInterval(interval);
-        alert("任務執行失敗：" + data.error);
-      }
-      // 否則繼續等待
-    }, 1000);
-  };
-
-
 
   const nextQuestion = () => {
-    setCurrentIndex((idx) => (idx + 1) % sentences.length);
-    setAudioURL(null);
-    setUserStressIndices([]);
-    setShowResult(false);
+    if (currentIndex + 1 >= sentences.length) {
+      setFinished(true); // 完成所有題目
+    } else {
+      setCurrentIndex(idx => idx + 1);
+      setAudioURL(null);
+      setUserStressIndices([]);
+      setShowResult(false);
+    }
   };
 
   return (
@@ -311,12 +266,27 @@ function App() {
                     </span>
                   );
                 } else {
-                  return <span key={i} style={{ marginRight: 6 }}>{w} </span>;
+                  if (isCorrect) {
+                    return (
+                      <span
+                        key={i}
+                        style={{
+                          color: "orange",  // 應重音但用戶沒重音標橘色
+                          fontWeight: "bold",
+                          marginRight: 6,
+                        }}
+                      >
+                        {w}
+                      </span>
+                    );
+                  } else {
+                    return <span key={i} style={{ marginRight: 6 }}>{w} </span>;
+                  }
                 }
               })}
             </p>
             <p style={{ fontStyle: "italic", color: "#555" }}>
-              （綠字為正確重音，紅字為錯誤重音）
+              （綠字為正確重音，紅字為錯誤重音，橘字為漏念重音）
             </p>
           </div>
         )}
