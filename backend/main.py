@@ -6,11 +6,20 @@ from fastapi.responses import JSONResponse
 from celery.result import AsyncResult # 用於查詢 Celery 任務狀態
 from tasks import analyze_stress_task, celery_app # 從 tasks.py 導入 Celery 應用和任務
 import json
+from fastapi.middleware.cors import CORSMiddleware
 
 # --- FastAPI 應用初始化 ---
 app = FastAPI(
     title="WhiStress POC Backend",
     description="Backend for stress pattern analysis using WhiStress model."
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 可改成限定來源如 ["http://localhost:3000"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # --- 1. 定義非同步 API 接口 ---
