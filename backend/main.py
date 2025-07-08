@@ -1,6 +1,3 @@
-import io
-import librosa
-import torch
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.responses import JSONResponse
 from celery.result import AsyncResult # 用於查詢 Celery 任務狀態
