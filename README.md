@@ -46,6 +46,8 @@ cd whistress_system/backend
 
 celery -A tasks worker --loglevel=info -P threads //-P solo
 
+celery -A tasks beat --loglevel=info
+
 ============================================
 
 (new terminal)
