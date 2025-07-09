@@ -52,6 +52,8 @@ celery -A tasks worker --loglevel=info -P threads //-P solo
 //uvicorn main:app --reload
 uvicorn main:app --host 0.0.0.0 --port 8000
 
+ps aux | grep uvicorn
+
 npm start
 
 ============================================
