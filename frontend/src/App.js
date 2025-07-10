@@ -111,7 +111,6 @@ function App() {
   };*/
   const sendAudio = async () => {
     if (!chunksRef.current.length) return;
-
     const blob = new Blob(chunksRef.current, { type: "audio/wav" });
     const formData = new FormData();
     formData.append("audio_file", blob, "recording.wav");
@@ -125,7 +124,6 @@ function App() {
       });
 
       const data = await response.json();
-
       if (data.success) {
         const taskId = data.task_id;
         pollTaskResult(taskId); // 啟動輪詢等待結果
@@ -137,7 +135,7 @@ function App() {
       alert("上傳錯誤");
     }
   };
-
+/*
   const pollTaskResult = async (taskId) => {
     const interval = setInterval(async () => {
       const res = await fetch(`http://localhost:8000/tasks/${taskId}`);
@@ -155,6 +153,60 @@ function App() {
       }
       // 否則繼續等待
     }, 1000);
+  };
+*/
+  // App.js (請替換您的 pollTaskResult 函數)
+  const pollTaskResult = async (taskId) => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/tasks/${taskId}`);
+        const data = await res.json();
+        console.log(`Polling task ${taskId} status:`, data.status, "Result:", data.result); // 添加日誌來觀察
+
+        if (data.status === "COMPLETED") { // <--- 這裡判斷的是模型分析完成的最終狀態
+          console.log("任務已完成！收到的完整數據:", data); // <-- 重要！查看整個 data 物件
+          console.log("任務已完成！結果部分:", data.result);
+          /*clearInterval(interval);
+          const { predicted_stresses } = data.result;
+          setUserStressIndices(predicted_stresses);
+          setShowResult(true);*/
+          if (data.result.batch_task_id) {
+            // 是個中繼轉交任務，這是你說的「新的 ID」
+            const newTaskId = data.result.batch_task_id;
+            console.log("轉交新的 task id:", newTaskId);
+            clearInterval(interval);
+            // 再用新的 ID 開一個 polling
+            pollTaskResult(newTaskId);
+          } else if (data.result.predicted_transcription) {
+            const predicted_stresses = data.result.predicted_stresses;
+            setUserStressIndices(predicted_stresses);
+            setShowResult(true);
+            clearInterval(interval);
+          } else {
+            console.log("COMPLETED，但結果格式不明：", data.result);
+            clearInterval(interval);
+          }
+        } else if (data.status === "FAILED") {
+          clearInterval(interval);
+          alert("任務執行失敗：" + data.error);
+          // 清理狀態，允許再次上傳
+          setAudioURL(null);
+          setRecording(false);
+          } else if (data.status === "PENDING" || data.status === "SUBMITTED_TO_BATCH") {
+            // 如果任務還在待處理或已提交到批次佇列，繼續等待
+            // 這部分是 Celery 任務 analyze_stress_task 的直接結果
+            // 而 process_pending_batch_task 處理後會更新原始任務的狀態
+            console.log("Task still pending or submitted to batch, waiting for COMPLETED...");
+        }
+      } catch (err) {
+        clearInterval(interval);
+        console.error(`Error polling task ${taskId}:`, err);
+        alert("查詢任務結果失敗：" + err.message);
+        // 清理狀態，允許再次上傳
+        setAudioURL(null);
+        setRecording(false);
+      }
+    }, 1000); // 每秒查詢一次
   };
 
 
