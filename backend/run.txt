@@ -1,3 +1,0 @@
-annhung@minun:~/myredis/redis-stable$ src/redis-server
-celery -A tasks worker --loglevel=info -P solo
-uvicorn main:app --reload
