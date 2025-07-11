@@ -9,7 +9,6 @@ from io import BytesIO
 import soundfile as sf
 from pydub import AudioSegment
 import tempfile
-import multiprocessing
 from celery.schedules import timedelta # 用於 Celery Beat 的時間排程
 import numpy as np # 用於處理 audio_array
 import redis # 需要安裝 pip install redis
@@ -18,7 +17,6 @@ import time
 import uuid
 from celery.result import AsyncResult
 
-multiprocessing.set_start_method("spawn", force=True)
 # --- Celery 配置 ---
 # BROKER_URL 指向你的 Redis 服務
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
