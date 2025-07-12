@@ -1,5 +1,5 @@
-torch==2.1.0
-torchaudio==2.1.0
+torch==2.1.1
+torchaudio==2.1.1
 torchlibrosa==0.1.0
 librosa==0.10.2.post1
 transformers==4.44.0
@@ -8,3 +8,8 @@ gradio==5.31.0
 datasets==3.6.0
 accelerate==1.7.0
 evaluate==0.4.3
+fastapi==0.115.14
+uvicorn==0.34.3
+celery==5.5.3
+redis==6.2.0
+pydub==0.25.1

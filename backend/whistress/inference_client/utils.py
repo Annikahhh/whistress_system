@@ -5,7 +5,6 @@ import numpy as np
 import pathlib
 from torch.nn import functional as F
 from ..model import WhiStress
-#from typing import Optional, List, Dict, Union
 from typing import List, Union, Dict, Optional
 
 PATH_TO_WEIGHTS = pathlib.Path(__file__).parent.parent / "weights"
@@ -134,7 +133,7 @@ def inference_from_audio_and_transcription(
         return_tensors="pt",
         padding="max_length",
         truncation=True,
-        max_length=30,
+        max_length=50,
     )["input_ids"]
     out_model = model(
                     input_features=input_features.to(device),
@@ -164,11 +163,9 @@ def scored_transcription(audio, model, strip_words=True, transcription: str = No
         word_level_stress = [(word.strip(), stress) for word, stress in word_level_stress]
     return word_level_stress
 
-#####################################
+######################## 加上batch ########################
 def inference_from_audio_batch(audio_list: list[np.ndarray], model: WhiStress, device: str):
-    """
-    接收一個音頻 NumPy 陣列的列表，執行批次模型推論。
-    """
+    #接收一個音頻 NumPy 陣列的列表，執行批次模型推論。
     # 1. 預處理所有音頻並收集 feature tensors
     # WhisperProcessor.feature_extractor 可以直接處理音頻列表並自動填充
     input_features_output = model.processor.feature_extractor(
@@ -179,7 +176,7 @@ def inference_from_audio_batch(audio_list: list[np.ndarray], model: WhiStress, d
     # 2. 執行模型推論
     out_model = model.generate_dual(input_features=batch_input_features)
 
-    # 3. 後處理結果 (這部分需要適應批次輸出)
+    # 3. 後處理結果 (適應批次輸出)
     emphasis_probs_batch = F.softmax(out_model.logits, dim=-1) # (batch_size, seq_len, num_classes)
     emphasis_preds_batch = torch.argmax(emphasis_probs_batch, dim=-1) # (batch_size, seq_len)
     
@@ -239,7 +236,7 @@ def inference_from_audio_and_transcription_batch(
         return_tensors="pt",
         padding="max_length", # 確保填充到相同長度
         truncation=True,
-        max_length=30, # 使用模型定義的 max_length
+        max_length=50, # 使用模型定義的 max_length
     )
     batch_input_ids = input_ids_output["input_ids"].to(device)
 
@@ -289,17 +286,13 @@ def scored_transcription(audio_dict, model, strip_words=True, transcription: str
     return word_level_stress
 
 def scored_transcription_batch(
-    audio_dicts: List[Dict[str, Union[np.ndarray, int]]], # 確保 List, Dict, Union 也被導入
+    audio_dicts: List[Dict[str, Union[np.ndarray, int]]], # 導入 List, Dict, Union, Optional
     model: WhiStress,
     strip_words=True,
-    transcriptions: Optional[List[str]] = None, # 這裡的 Optional 就能正常使用了
+    transcriptions: Optional[List[str]] = None,
     device="cuda"
 ):
-    """
-    接收一個音頻字典列表，對所有音頻執行批次推論。
-    如果提供了 transcriptions 列表，則使用帶轉錄的批次推論。
-    """
-    print("&&&in utils: scored_transciption_batch")
+    #接收一個音頻字典列表，對所有音頻執行批次推論
     prepared_audio_arrs = [prepare_audio(audio_dict) for audio_dict in audio_dicts]
     
     if transcriptions:
