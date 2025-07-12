@@ -131,7 +131,7 @@ async def get_task_status(task_id: str):
             else:
                 print(f"DEBUG: result_data 不是字典，無法檢查 'status' 鍵。")
 
-            if isinstance(result_data, dict) and (result_data.get("status") == "SUBMITTED_TO_BATCH" or result_data.get("status") == "COMPLETED"):
+            if isinstance(result_data, dict) and (result_data.get("status") == "SUBMITTED_TO_BATCH" or result_data.get("status") == "PREDICTED"):
                 print(f"DEBUG: 返回 COMPLETED")
                 return JSONResponse(content={
                     "status": "COMPLETED",

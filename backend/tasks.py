@@ -214,7 +214,7 @@ def process_pending_batch_task(self):
             # resul (pred_transcription, pred_stresses_indices)
             # 轉換回 JSON 格式
             formatted_result = {
-                "status": "COMPLETED",
+                "status": "PREDICTED",
                 "predicted_transcription": result[0],
                 "predicted_stresses": [idx for idx, val in enumerate(result[1]) if val == 1]
             }
