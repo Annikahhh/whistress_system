@@ -1,4 +1,4 @@
-> # WhiStress Speech Stress Analysis System
+# WhiStress Speech Stress Analysis System
 
 This project is an implementation of the [WhiStress model](https://github.com/slp-rl/WhiStress), providing a complete pipeline for speech stress prediction. It includes:
 
