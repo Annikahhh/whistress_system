@@ -1,63 +1,196 @@
-# whistress_system
-conda create -n whistress python=3.10
-conda activate whistress
-pip install -r requirements.txt
- 1. 進入家目錄或其他工作資料夾
-cd ~
-mkdir -p myredis && cd myredis
+> # WhiStress Speech Stress Analysis System
 
- 2. 下載 Redis 原始碼
+This project is an implementation of the [WhiStress model](https://github.com/slp-rl/WhiStress), providing a complete pipeline for speech stress prediction. It includes:
+
+- User-uploaded audio processing  
+- Stress prediction using the WhiStress model  
+- A FastAPI backend providing an HTTP API  
+- A React-based frontend interface  
+- Redis + Celery for task queue management
+
+---
+
+## Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Annikahhh/whistress_system.git
+cd whistress_system
+```
+
+### 2. Set Up the Python Environment
+
+Make sure you are using Python 3.10, then install the required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Install Redis
+
+Download and compile Redis:
+
+```bash
+# Navigate to a directory where you want to install Redis
 wget http://download.redis.io/redis-stable.tar.gz
 tar xzf redis-stable.tar.gz
 cd redis-stable
-
- 3. 編譯 Redis（會產生可執行檔，不需要 sudo）
 make
+```
 
- 4. 測試一下
-src/redis-server --version
+### 4. Install Node.js and npm (for the Frontend)
 
-pip install celery
-
- 1. 下載並安裝 nvm
+```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
- 2. 重新加載 shell 設定檔
 export NVM_DIR="$HOME/.nvm"
 source "$NVM_DIR/nvm.sh"
 
- 3. 安裝最新 LTS 版本的 Node.js
 nvm install --lts
-
- 4. 使用剛剛安裝的版本（可選）
 nvm use --lts
-
 npm install
 
+```
+
+---
+
+## Download WhiStress Model Weights
+
+```bash
+python backend/whistress/download_weights.py
+```
+
+After downloading, the expected project structure is:
+
+```
+whistress_system/
+├── backend/
+│   ├── whistress/
+│   │   ├── weights/
+│   │   ├── model.py
+│   │   └── inference_client.py
+│   ├── main.py
+│   ├── tasks.py
+│   ├── requirements.txt
+│   └── download_weights.py
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   └── package.json
+└── README.md
+```
+
+---
+
+## Usage
+
+You can simply run:
+
+```bash
+make start
+````
+
+This command launches all major components of the system, including Redis, Celery Beat, Celery Worker, the FastAPI backend, and the React frontend.
+
+### Individual Commands (Optional)
+
+You can also start each component manually using either `make` or the equivalent shell command:
+
+
+### 1. Start Redis (Keep Running)
+
+```bash
+make redis
+```
+
+or manually:
+
+```bash
 cd ~/myredis/redis-stable
-
 src/redis-server
+```
 
-//lsof -i :6379 
-//kill <PID>
 
-(new ternimal)
+### 2. Start Celery Beat and Worker (Keep Running)
+
+```bash
+make celery-beat
+make celery-worker
+```
+
+or manually:
+
+```bash
 cd whistress_system/backend
-
-celery -A tasks worker --loglevel=info -P threads //-P solo
-
 celery -A tasks beat --loglevel=info
+celery -A tasks worker --loglevel=info --pool=threads
+```
 
-============================================
 
-(new terminal)
-//uvicorn main:app --reload
+### 3. Start FastAPI Server
+
+```bash
+make api
+```
+
+or manually:
+
+```bash
+cd backend
 uvicorn main:app --host 0.0.0.0 --port 8000
+```
 
-ps aux | grep uvicorn
 
+### 4. Start Frontend
+
+```bash
+make frontend
+```
+
+or manually:
+
+```bash
+cd frontend
 npm start
+```
 
-============================================
+### Stopping All Services
 
-uvicorn main:app --host 0.0.0.0 --port 8000
+To stop all running services started via `make`, use:
+
+```bash
+make stop
+```
+
+This will attempt to kill Redis, Celery, FastAPI, and React processes using `pkill`.
+
+---
+
+
+- Web interface available at: [http://localhost:3000](http://localhost:3000)  
+- API documentation available at: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+## License
+
+This project is licensed under the [MIT License](https://choosealicense.com/licenses/mit/).
+
+---
+
+## Citation
+
+Original paper:
+
+```bibtex
+@misc{yosha2025whistress,
+    title={WHISTRESS: Enriching Transcriptions with Sentence Stress Detection}, 
+    author={Iddo Yosha and Dorin Shteyman and Yossi Adi},
+    year={2025},
+    eprint={2505.19103},
+    archivePrefix={arXiv},
+    primaryClass={cs.CL},
+    url={https://arxiv.org/abs/2505.19103}, 
+}
+```
