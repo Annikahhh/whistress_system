@@ -72,12 +72,12 @@ whistress_system/
 │   │   └── inference_client.py
 │   ├── main.py
 │   ├── tasks.py
-│   ├── requirements.txt
 │   └── download_weights.py
 ├── frontend/
 │   ├── public/
 │   ├── src/
 │   └── package.json
+├── requirements.txt
 └── README.md
 ```
 
