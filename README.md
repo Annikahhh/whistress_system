@@ -168,7 +168,7 @@ This will attempt to kill Redis, Celery, FastAPI, and React processes using `pki
 ---
 
 
-- Web interface available at: [https://9044b9cb.whistress-system.pages.dev/](https://9044b9cb.whistress-system.pages.dev/)
+- Web interface available at: [https://whistress-system.pages.dev/](https://whistress-system.pages.dev/)
 - API documentation available at: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
