@@ -40,7 +40,7 @@ celery_app.conf.update(
     beat_schedule={
         'process-pending-batch-every-5-seconds': {
             'task': 'tasks.process_pending_batch_task', # 指向新任務
-            'schedule': timedelta(seconds=3), # 每 5 秒觸發一次
+            'schedule': timedelta(seconds=0.5), # 每 0.5 秒觸發一次
         },
     },
 )
