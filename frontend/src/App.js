@@ -1,20 +1,19 @@
 import React, { useState, useRef } from "react";
 
 const sentences = [
-  { text: "I want to eat an apple.", stresses: [0, 5] },
-  { text: "She likes to play the piano.", stresses: [1, 5] },
-  { text: "Today is a beautiful sunny day.", stresses: [0, 4] },
-  { text: "Can you help me with this task.", stresses: [1, 5] },
-  { text: "He is reading a good book.", stresses: [0, 5] },
-  { text: "We will meet at the coffee shop.", stresses: [2, 6] },
-  { text: "They are watching a new movie.", stresses: [1, 5] },
-  { text: "The weather forecast says it will rain.", stresses: [0, 7] },
-  { text: "I bought some fresh vegetables today.", stresses: [0, 6] },
-  { text: "Please open the window for some air.", stresses: [1, 6] },
+  { text: "The cat slept under the warm blanket", stresses: [1, 5] },
+  { text: "My brother plays the guitar every night", stresses: [1, 5] },
+  { text: "She quickly answered the difficult question", stresses: [1, 5] },
+  { text: "He opened the door without making a sound", stresses: [2, 7] },
+  { text: "I usually drink coffee before work", stresses: [2, 4] },
+  { text: "They traveled across the country by train", stresses: [1, 6] },
+  { text: "The flowers bloom beautifully in spring", stresses: [2, 4] },
+  { text: "You should always tell the truth", stresses: [2, 4] },
+  { text: "We watched a movie at the cinema", stresses: [1, 6] },
+  { text: "The teacher gave us an interesting assignment", stresses: [1, 6] },
 ];
 
 function App() {
-  // states 陣列：每題的錄音狀態、音檔 URL、重音分析結果、是否顯示結果
   const [states, setStates] = useState(
     sentences.map(() => ({
       recording: false,
@@ -27,7 +26,6 @@ function App() {
   const mediaRecorderRefs = useRef([]);
   const chunksRefs = useRef(sentences.map(() => []));
 
-  // 更新單題狀態的輔助函式，確保創建新陣列以觸發重渲染
   const updateState = (idx, newPartialState) => {
     setStates((prevStates) =>
       prevStates.map((state, i) =>
@@ -36,7 +34,6 @@ function App() {
     );
   };
 
-  // 開始錄音
   const startRecording = (idx) => {
     updateState(idx, { recording: true, audioURL: null, showResult: false });
     chunksRefs.current[idx] = [];
@@ -64,7 +61,6 @@ function App() {
       });
   };
 
-  // 停止錄音
   const stopRecording = (idx) => {
     const recorder = mediaRecorderRefs.current[idx];
     if (recorder && recorder.state === "recording") {
@@ -73,7 +69,6 @@ function App() {
     }
   };
 
-  // 送出音檔分析重音
   const sendAudio = async (idx) => {
     const chunks = chunksRefs.current[idx];
     if (!chunks.length) {
@@ -103,27 +98,22 @@ function App() {
     }
   };
 
-  // 輪詢任務結果
   const pollTaskResult = (taskId, idx) => {
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`http://localhost:8000/tasks/${taskId}`);
         const data = await res.json();
 
-        console.log(`Polling task ${taskId} status:`, data.status, "Result:", data.result);
-
         if (data.status === "COMPLETED") {
           clearInterval(interval);
 
           if (data.result.batch_task_id) {
-            // 中繼任務，換成新的 task_id 繼續輪詢
             pollTaskResult(data.result.batch_task_id, idx);
           } else if (data.result.predicted_transcription) {
             const predicted = data.result.predicted_stresses;
-            console.log("✅ 更新第", idx, "題重音：", predicted);
 
             updateState(idx, {
-              userStressIndices: [...predicted], // 確保新陣列觸發更新
+              userStressIndices: [...predicted],
               showResult: true,
             });
           } else {
@@ -133,7 +123,6 @@ function App() {
           clearInterval(interval);
           alert("任務失敗：" + data.error);
         }
-        // 其他狀態繼續等待
       } catch (err) {
         clearInterval(interval);
         alert("任務查詢錯誤：" + err.message);
@@ -144,11 +133,11 @@ function App() {
   return (
     <div
       style={{
-        padding: 40,
         backgroundColor: "#e3f2fd",
         fontFamily: "sans-serif",
-        maxWidth: 720,
-        margin: "auto",
+        minHeight: "100vh",
+        padding: "40px 5vw",
+        boxSizing: "border-box",
       }}
     >
       <h2 style={{ color: "#1565c0", marginBottom: 30 }}>🔊 一頁多題句子重音分析</h2>
@@ -168,73 +157,116 @@ function App() {
               marginBottom: 24,
             }}
           >
-            <h4 style={{ color: "#0d47a1" }}>第 {idx + 1} 題</h4>
-            <p style={{ fontSize: 18, marginBottom: 10 }}>
-              {words.map((w, i) => {
-                const isCorrect = sentence.stresses.includes(i);
-                return (
-                  <span
-                    key={i}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 12,
+              }}
+            >
+              <p style={{ fontSize: 18, margin: 0, flex: 1 }}>
+                {words.map((w, i) => {
+                  const isCorrect = sentence.stresses.includes(i);
+                  return (
+                    <span
+                      key={i}
+                      style={{
+                        textDecoration: isCorrect ? "underline" : "none",
+                        fontWeight: isCorrect ? "bold" : "normal",
+                        marginRight: 6,
+                      }}
+                    >
+                      {w}
+                    </span>
+                  );
+                })}
+              </p>
+
+              <div style={{ display: "flex", gap: 10, marginLeft: 12 }}>
+                {!recording ? (
+                  <button
+                    onClick={() => startRecording(idx)}
                     style={{
-                      textDecoration: isCorrect ? "underline" : "none",
-                      fontWeight: isCorrect ? "bold" : "normal",
-                      marginRight: 6,
+                      fontSize: 16,
+                      padding: "8px 14px",
+                      cursor: "pointer",
+                      borderRadius: 6,
+                      border: "none",
+                      backgroundColor: "#1976d2",
+                      color: "white",
                     }}
                   >
-                    {w}
-                  </span>
-                );
-              })}
-            </p>
-
-            <div style={{ marginBottom: 10 }}>
-              {!recording ? (
+                    🎙️ 開始錄音
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => stopRecording(idx)}
+                    style={{
+                      fontSize: 16,
+                      padding: "8px 14px",
+                      cursor: "pointer",
+                      borderRadius: 6,
+                      border: "none",
+                      backgroundColor: "#d32f2f",
+                      color: "white",
+                    }}
+                  >
+                    ⏹️ 停止錄音
+                  </button>
+                )}
                 <button
-                  onClick={() => startRecording(idx)}
-                  style={{ marginRight: 10 }}
+                  onClick={() => sendAudio(idx)}
+                  disabled={!audioURL}
+                  style={{
+                    fontSize: 16,
+                    padding: "8px 14px",
+                    cursor: audioURL ? "pointer" : "not-allowed",
+                    borderRadius: 6,
+                    border: "none",
+                    backgroundColor: audioURL ? "#4caf50" : "#ccc",
+                    color: "white",
+                  }}
                 >
-                  🎙️ 開始錄音
+                  📤 分析重音
                 </button>
-              ) : (
-                <button
-                  onClick={() => stopRecording(idx)}
-                  style={{ marginRight: 10 }}
-                >
-                  ⏹️ 停止錄音
-                </button>
-              )}
-
-              <button
-                onClick={() => sendAudio(idx)}
-                disabled={!audioURL}
-                style={{
-                  backgroundColor: audioURL ? "#4caf50" : "#ccc",
-                  color: "white",
-                  padding: "6px 12px",
-                  border: "none",
-                  borderRadius: 4,
-                  cursor: audioURL ? "pointer" : "not-allowed",
-                }}
-              >
-                📤 分析重音
-              </button>
+              </div>
             </div>
 
             {audioURL && (
-              <audio src={audioURL} controls style={{ marginBottom: 10 }} />
+              <audio
+                src={audioURL}
+                controls
+                style={{ marginBottom: 10, width: "100%" }}
+              />
             )}
 
             {showResult && (
               <div
                 style={{
                   backgroundColor: "#f1f8e9",
-                  padding: 10,
+                  padding: 12,
                   borderRadius: 6,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "flex-start",
+                  height: 80,
+                  userSelect: "none",
                 }}
               >
-                <p style={{ fontSize: 16 }}>
+                <p
+                  style={{
+                    fontSize: 18,
+                    margin: 0,
+                    wordBreak: "break-word",
+                    lineHeight: 1.4,
+                  }}
+                >
                   {words.map((w, i) => {
-                    const userHas = Array.isArray(userStressIndices) && userStressIndices.includes(i);
+                    const userHas =
+                      Array.isArray(userStressIndices) &&
+                      userStressIndices.includes(i);
                     const shouldHave = sentence.stresses.includes(i);
 
                     if (userHas) {
@@ -273,9 +305,9 @@ function App() {
                 <p
                   style={{
                     fontStyle: "italic",
-                    fontSize: 12,
+                    fontSize: 14,
                     color: "#555",
-                    marginTop: 4,
+                    marginTop: 8,
                   }}
                 >
                   綠=正確、紅=錯誤、橘=漏標重音
