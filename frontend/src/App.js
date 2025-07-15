@@ -28,9 +28,7 @@ function App() {
 
   const updateState = (idx, newPartialState) => {
     setStates((prevStates) =>
-      prevStates.map((state, i) =>
-        i === idx ? { ...state, ...newPartialState } : state
-      )
+      prevStates.map((state, i) => (i === idx ? { ...state, ...newPartialState } : state))
     );
   };
 
@@ -53,6 +51,7 @@ function App() {
           const blob = new Blob(chunksRefs.current[idx], { type: "audio/wav" });
           const url = URL.createObjectURL(blob);
           updateState(idx, { audioURL: url });
+          sendAudio(idx); // ✅ 確保 chunks 有資料後再送出分析
         };
       })
       .catch((err) => {
@@ -111,7 +110,6 @@ function App() {
             pollTaskResult(data.result.batch_task_id, idx);
           } else if (data.result.predicted_transcription) {
             const predicted = data.result.predicted_stresses;
-
             updateState(idx, {
               userStressIndices: [...predicted],
               showResult: true,
@@ -160,12 +158,12 @@ function App() {
             <div
               style={{
                 display: "flex",
-                justifyContent: "space-between",
                 alignItems: "center",
+                justifyContent: "space-between",
                 marginBottom: 12,
               }}
             >
-              <p style={{ fontSize: 18, margin: 0, flex: 1 }}>
+              <div style={{ fontSize: 18, fontWeight: "500" }}>
                 {words.map((w, i) => {
                   const isCorrect = sentence.stresses.includes(i);
                   return (
@@ -181,65 +179,28 @@ function App() {
                     </span>
                   );
                 })}
-              </p>
+              </div>
 
-              <div style={{ display: "flex", gap: 10, marginLeft: 12 }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                 {!recording ? (
                   <button
                     onClick={() => startRecording(idx)}
-                    style={{
-                      fontSize: 16,
-                      padding: "8px 14px",
-                      cursor: "pointer",
-                      borderRadius: 6,
-                      border: "none",
-                      backgroundColor: "#1976d2",
-                      color: "white",
-                    }}
+                    style={{ padding: "8px 14px", fontSize: 16, cursor: "pointer" }}
                   >
                     🎙️ 開始錄音
                   </button>
                 ) : (
                   <button
                     onClick={() => stopRecording(idx)}
-                    style={{
-                      fontSize: 16,
-                      padding: "8px 14px",
-                      cursor: "pointer",
-                      borderRadius: 6,
-                      border: "none",
-                      backgroundColor: "#d32f2f",
-                      color: "white",
-                    }}
+                    style={{ padding: "8px 14px", fontSize: 16, cursor: "pointer" }}
                   >
                     ⏹️ 停止錄音
                   </button>
                 )}
-                <button
-                  onClick={() => sendAudio(idx)}
-                  disabled={!audioURL}
-                  style={{
-                    fontSize: 16,
-                    padding: "8px 14px",
-                    cursor: audioURL ? "pointer" : "not-allowed",
-                    borderRadius: 6,
-                    border: "none",
-                    backgroundColor: audioURL ? "#4caf50" : "#ccc",
-                    color: "white",
-                  }}
-                >
-                  📤 分析重音
-                </button>
               </div>
             </div>
 
-            {audioURL && (
-              <audio
-                src={audioURL}
-                controls
-                style={{ marginBottom: 10, width: "100%" }}
-              />
-            )}
+            {audioURL && <audio src={audioURL} controls style={{ marginBottom: 12 }} />}
 
             {showResult && (
               <div
@@ -250,23 +211,12 @@ function App() {
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
-                  alignItems: "flex-start",
-                  height: 80,
-                  userSelect: "none",
+                  minHeight: 80,
                 }}
               >
-                <p
-                  style={{
-                    fontSize: 18,
-                    margin: 0,
-                    wordBreak: "break-word",
-                    lineHeight: 1.4,
-                  }}
-                >
+                <p style={{ fontSize: 18, margin: 0 }}>
                   {words.map((w, i) => {
-                    const userHas =
-                      Array.isArray(userStressIndices) &&
-                      userStressIndices.includes(i);
+                    const userHas = Array.isArray(userStressIndices) && userStressIndices.includes(i);
                     const shouldHave = sentence.stresses.includes(i);
 
                     if (userHas) {
@@ -276,7 +226,7 @@ function App() {
                           style={{
                             color: shouldHave ? "green" : "red",
                             fontWeight: "bold",
-                            marginRight: 6,
+                            marginRight: 8,
                           }}
                         >
                           {w}
@@ -289,13 +239,13 @@ function App() {
                           style={{
                             color: "orange",
                             fontWeight: "bold",
-                            marginRight: 6,
+                            marginRight: 8,
                           }}
                         >
                           {w}
                         </span>
                       ) : (
-                        <span key={i} style={{ marginRight: 6 }}>
+                        <span key={i} style={{ marginRight: 8 }}>
                           {w}
                         </span>
                       );
@@ -308,6 +258,7 @@ function App() {
                     fontSize: 14,
                     color: "#555",
                     marginTop: 8,
+                    textAlign: "left",
                   }}
                 >
                   綠=正確、紅=錯誤、橘=漏標重音
