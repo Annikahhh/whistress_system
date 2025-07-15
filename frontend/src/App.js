@@ -14,7 +14,7 @@ const sentences = [
 ];
 
 // 模擬使用者重音結果 (隨機產生正確或錯誤)
-function mockUserStress(correctStresses, wordCount) {
+/*function mockUserStress(correctStresses, wordCount) {
   return Array.from({ length: wordCount }, (_, i) => {
     if (correctStresses.includes(i)) {
       return Math.random() < 0.8 ? i : -1;
@@ -22,7 +22,7 @@ function mockUserStress(correctStresses, wordCount) {
       return Math.random() < 0.2 ? i : -1;
     }
   }).filter(i => i !== -1);
-}
+}*/
 
 function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
