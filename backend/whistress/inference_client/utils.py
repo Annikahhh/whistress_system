@@ -133,7 +133,7 @@ def inference_from_audio_and_transcription(
         return_tensors="pt",
         padding="max_length",
         truncation=True,
-        max_length=50,
+        max_length=200,
     )["input_ids"]
     out_model = model(
                     input_features=input_features.to(device),
@@ -236,7 +236,7 @@ def inference_from_audio_and_transcription_batch(
         return_tensors="pt",
         padding="max_length", # 確保填充到相同長度
         truncation=True,
-        max_length=50, # 使用模型定義的 max_length
+        max_length=200, # 使用模型定義的 max_length
     )
     batch_input_ids = input_ids_output["input_ids"].to(device)
 

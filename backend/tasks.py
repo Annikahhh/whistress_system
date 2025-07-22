@@ -150,13 +150,15 @@ def process_pending_batch_task(self):
 
             # --- 音頻轉換邏輯 ---
             # 建立第一個臨時檔案 (.webm)
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_in:
+            #with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_in:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".input") as temp_in:
                 temp_in.write(audio_bytes)
                 temp_in.flush()
                 temp_in_path = temp_in.name
 
             # 從 .webm 讀取並轉換為 .wav
-            audio = AudioSegment.from_file(temp_in_path, format="webm")
+            #audio = AudioSegment.from_file(temp_in_path, format="webm")
+            audio = AudioSegment.from_file(temp_in_path)
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_out:
                 audio.export(temp_out.name, format="wav")
                 temp_out_path = temp_out.name

@@ -47,7 +47,7 @@ api:
 	cd $(BACKEND_DIR) && uvicorn main:app --host $(HOST) --port $(PORT)
 
 frontend:
-	cd $(FRONTEND_DIR) && npm run build
+	cd $(FRONTEND_DIR) && npm start
 
 # ----------------------------------------------------------------------------- 
 # Convenience shortcuts
