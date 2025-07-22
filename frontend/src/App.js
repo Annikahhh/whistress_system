@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 
 const sentences = [
-  { text: "The cat slept under the warm blanket", stresses: [1, 5] },
+  { text: "Andy and his friends went to the amusement park last weekend. They were very excited! First, they rode the big roller coaster. It went fast! Andy screamed, but he was happy. Next, they ate ice cream and hot dogs. The ice cream was cold and sweet. The hot dog was delicious.", stresses: [0, 3, 7, 8, 10, 13, 14, 15, 17, 19, 20, 21, 24, 25, 26, 30, 31, 33, 34, 35, 37, 38, 40, 41, 43, 45, 47, 48, 50] },
   { text: "My brother plays the guitar every night", stresses: [1, 5] },
   { text: "She quickly answered the difficult question", stresses: [1, 5] },
   { text: "He opened the door without making a sound", stresses: [2, 7] },
