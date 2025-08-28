@@ -48,6 +48,7 @@ api:
 
 frontend:
 	cd $(FRONTEND_DIR) && npm run build
+# start/run build
 
 # ----------------------------------------------------------------------------- 
 # Convenience shortcuts
