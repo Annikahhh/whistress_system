@@ -164,16 +164,16 @@ function App() {
                 marginBottom: 12,
               }}
             >
-              <div style={{fontSize: 18, fontWeight: "500" }}
-                  // fontSize: 18,
-                  // fontWeight: "500",
-                  // flex: 1,
-                  // flexWrap: "wrap",
-                  // wordWrap: "break-word",
-                  // overflowWrap: "break-word",
-                  // whiteSpace: "normal", // <-- 最重要這一行
-                  // lineHeight: 1.6,
-                //}}
+              <div style={{//fontSize: 18, fontWeight: "500" }}
+                  fontSize: 18,
+                  fontWeight: "500",
+                  flex: 1,
+                  flexWrap: "wrap",
+                  wordWrap: "break-word",
+                  overflowWrap: "break-word",
+                  whiteSpace: "normal", // <-- 最重要這一行
+                  lineHeight: 1.6,
+                }}
               >
                 {words.map((w, i) => {
                   const isCorrect = sentence.stresses.includes(i);
